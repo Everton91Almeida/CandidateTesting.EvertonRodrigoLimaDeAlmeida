@@ -1,30 +1,41 @@
-﻿using CandidateTesting.EvertonRodrigoLimaDeAlmeida.BO;
+﻿using CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.BO;
+using CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.Interface.Service;
+using CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.Service;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida
 {
-    class Program
+    public class Program
     {
+        private static ServiceProvider ServiceProvider;
+
         static void Main(string[] args)
         {
-            var text = GetFileText().GetAwaiter().GetResult().Trim().Replace("\r", "").Split('\n');
-            foreach (var item in text)
-            {
-                Console.WriteLine(item);
-                Console.WriteLine(new Log(item));
-            }
-
-            Console.Read();
+            ServiceProvider = new ServiceCollection()
+                .AddTransient(typeof(ILogService<>), typeof(LogService<>))
+                .AddTransient<IFileService, FileService>()
+                .BuildServiceProvider();
+            Run();
         }
 
-        private async static Task<string> GetFileText()
+        private static void Run()
         {
-            using (var http = new HttpClient())
-            {
-                return await http.GetStringAsync("https://s3.amazonaws.com/uux-itaas-static/minha-cdn-logs/input-01.txt");
-            }
+            WriteInicialInformation();
+            var fileService = ServiceProvider.GetService<IFileService>();
+            var logService = ServiceProvider.GetService<ILogService<MinhaCDNLog>>();
+
+            Console.WriteLine(logService.GetFormat());
+
+            foreach (var item in fileService.GetFromStorage("C:/Users/evert/OneDrive/Área de Trabalho/input-01.txt"))
+                Console.WriteLine(logService.Parse(item));
         }
+
+        private static void WriteInicialInformation()
+        {
+            Console.WriteLine("#Version 1.0");
+            Console.WriteLine($"#{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}");
+        }
+
     }
 }
