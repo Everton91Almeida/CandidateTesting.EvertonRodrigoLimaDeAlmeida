@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 
 namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.Interface.Service
 {
     public interface IFileService
     {
-        IEnumerable<string> GetFromStorage(string path);
+        Task<string> GetString(string url);
+        void SaveAsFile(string path, string content);
     }
 }

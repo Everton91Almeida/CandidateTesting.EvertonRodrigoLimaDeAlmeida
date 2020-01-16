@@ -2,9 +2,9 @@
 
 namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.Interface.Service
 {
-    public interface ILogService<T> where T : LogBase
+    public interface ILogService<TLog> where TLog : LogBase
     {
-        T Parse(string row);
+        TLog Parse(string row);
         string GetFormat();
     }
 }

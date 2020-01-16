@@ -8,46 +8,41 @@ using System.Text.RegularExpressions;
 
 namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.Service
 {
-    public class LogService<T> : ILogService<T> where T : LogBase
+    public class LogService<TLog> : ILogService<TLog> where TLog : LogBase
     {
-        private struct LogData
-        {
-            public int position;
-            public string name;
-        }
+        private readonly IEnumerable<LogData> LogData;
 
-        public string GetFormat()
+        public LogService() =>
+            LogData = GetLogData();
+
+        public string GetFormat() =>
+            string.Join(' ', LogData.OrderBy(l => l.Position).Select(l => l.Name)).Trim();
+
+        private IEnumerable<LogData> GetLogData()
         {
-            var logData = new List<LogData>();
-            foreach (var property in typeof(T).GetProperties())
+            foreach (var property in typeof(TLog).GetProperties())
             {
-                foreach (var attribute in property.CustomAttributes)
+                var prop = typeof(TLog).GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (prop != null && prop.CanWrite)
                 {
-                    var prop = typeof(T).GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
-                    if (prop != null && prop.CanWrite)
+                    yield return new LogData()
                     {
-                        logData.Add(new LogData()
-                        {
-                            name = prop.CustomAttributes.FirstOrDefault().ConstructorArguments[0].Value.ToString(),
-                            position = (int)prop.CustomAttributes.FirstOrDefault().ConstructorArguments[1].Value,
-                        });
-                    }
+                        Name = prop.CustomAttributes.FirstOrDefault().ConstructorArguments[0].Value.ToString(),
+                        Position = (int)prop.CustomAttributes.FirstOrDefault().ConstructorArguments[1].Value,
+                    };
                 }
             }
-
-            return String.Join(' ', logData.OrderBy(l => l.position).Select(l => l.name).ToArray()).Trim();
         }
 
-        public T Parse(string row)
+        public TLog Parse(string row)
         {
-            var obj = (T)Activator.CreateInstance(typeof(T));
+            var log = (TLog)Activator.CreateInstance(typeof(TLog));
             var values = row.Split('|');
-            foreach (var property in typeof(T).GetProperties())
+            foreach (var property in typeof(TLog).GetProperties())
             {
                 foreach (var attribute in property.CustomAttributes)
                 {
-                    var prop = typeof(T).GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
-                    if (prop != null && prop.CanWrite && prop.CustomAttributes.FirstOrDefault().ConstructorArguments.Count > 2)
+                    if (property != null && property.CanWrite && property.CustomAttributes.FirstOrDefault().ConstructorArguments.Count > 2)
                     {
                         var pattern = attribute.ConstructorArguments[4].Value;
                         var value = values[(int)attribute.ConstructorArguments[2].Value];
@@ -55,14 +50,14 @@ namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.Service
                         if (pattern != null)
                         {
                             var type = (Type)attribute.ConstructorArguments[3].Value;
-                            prop.SetValue(obj, Convert.ChangeType(Regex.Match(value, pattern.ToString()).Value, type));
+                            property.SetValue(log, Convert.ChangeType(Regex.Match(value, pattern.ToString()).Value, type));
                         }
                         else
-                            prop.SetValue(obj, value);
+                            property.SetValue(log, value);
                     }
                 }
             }
-            return obj;
+            return log;
         }
     }
 }
