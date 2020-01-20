@@ -15,14 +15,14 @@ namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Test
         [Trait("BO", "Log")]
         public void LogBase_ToString_ReturnToStringValue()
         {
-            //Arrange
-            var log = LogBaseFixture.GetLog();
+            var logs = LogBaseFixture.GetLogs();
 
-            //Act
-            var result = log.ToString();
-
-            //Assert
-            Assert.Equal(log.Provider, result);
+            Assert.All(logs, l =>
+            {
+                var expected = l.Provider;
+                var result = l.ToString();
+                Assert.Equal(expected, result);
+            });
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.BO;
-using Xunit;
+﻿using Xunit;
 
 namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Test
 {
@@ -15,15 +14,14 @@ namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Test
         [Trait("BO", "Log")]
         public void MinhaCDNLog_ToString_ReturnToStringValue()
         {
-            //Arrange
-            var log = LogBaseFixture.GetLog();
+            var logs = LogBaseFixture.GetLogs();
 
-            //Act
-            var result = log.ToString();
-            var expected = $"{log.Provider} {log.HttpMethod} {log.StatusCode} {log.UriPath} {log.TimeTaken} {log.ResponseSize} {log.CacheStatus}";
-
-            //Assert
-            Assert.Equal(expected, result);
+            Assert.All(logs, l =>
+            {
+                var expected = $"{l.Provider} {l.HttpMethod} {l.StatusCode} {l.UriPath} {l.TimeTaken} {l.ResponseSize} {l.CacheStatus}";
+                var result = l.ToString();
+                Assert.Equal(expected, result);
+            });
         }
     }
 }

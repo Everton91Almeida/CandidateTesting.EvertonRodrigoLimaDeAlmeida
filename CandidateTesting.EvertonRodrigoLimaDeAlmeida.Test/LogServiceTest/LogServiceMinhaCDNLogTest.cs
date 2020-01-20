@@ -5,8 +5,14 @@ using Xunit;
 
 namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Test
 {
+    [Collection(nameof(LogServiceMinhaCDNLogCollection))]
     public class LogServiceMinhaCDNLogTest
     {
+        private readonly LogServiceMinhaCDNLogFixture ServiceFixture;
+
+        public LogServiceMinhaCDNLogTest(LogServiceMinhaCDNLogFixture serviceFixture) =>
+            ServiceFixture = serviceFixture;
+
         [Fact(DisplayName = "LogService MinhaCDNLog GetFormat")]
         [Trait("Service", "LogService")]
         public void LogService_GetFormat_ReturnMinhaCDNLogFormat()
@@ -21,28 +27,23 @@ namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Test
             Assert.Equal("provider http-method status-code uri-path time-taken response-size cache-status", result);
         }
 
+        [Fact(DisplayName = "LogService MinhaCDNLog Parse")]
         [Trait("Service", "LogService")]
-        [Theory(DisplayName = "LogService MinhaCDNLog Parse")]
-        [InlineData("312|200|HIT|\"GET /robots.txt HTTP / 1.1\"|100.2")]
-        public void LogService_GetLogData_ReturnValueFromParse(string row)
+        public void LogService_GetLogData_ReturnValueFromParse()
         {
-            //Arrange
-            var logService = new LogService<MinhaCDNLog>();
+            ILogService<MinhaCDNLog> logService = new LogService<MinhaCDNLog>();
+            var rows = ServiceFixture.GetRows();
 
-            //Act
-            var result = logService.Parse(row);
-
-            //Assert
-            Assert.Equal(new MinhaCDNLog()
+            Assert.All(rows, r =>
             {
-                CacheStatus = "HIT",
-                HttpMethod = "GET",
-                Provider = "\"MINHA CDN\"",
-                ResponseSize = 312,
-                StatusCode = 200,
-                TimeTaken = 100,
-                UriPath = "/robots.txt"
-            }, result);
+                var result = logService.Parse(r);
+                Assert.NotNull(result.ResponseSize);
+                Assert.NotNull(result.StatusCode);
+                Assert.NotNull(result.CacheStatus);
+                Assert.NotNull(result.HttpMethod);
+                Assert.NotNull(result.UriPath);
+                Assert.NotNull(result.TimeTaken);
+            });
         }
     }
 }

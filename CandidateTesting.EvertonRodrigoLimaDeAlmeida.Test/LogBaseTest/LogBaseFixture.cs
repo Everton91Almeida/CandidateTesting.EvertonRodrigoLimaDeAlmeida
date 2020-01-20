@@ -16,7 +16,7 @@ namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Test
             CreteLogs(1).FirstOrDefault();
 
         public IEnumerable<LogBase> GetLogs() =>
-            CreteLogs(50).ToList();
+            CreteLogs(50);
 
         private IEnumerable<LogBase> CreteLogs(int amount) =>
             new Faker<LogBase>("pt_BR")
