@@ -4,6 +4,23 @@ namespace CandidateTesting.EvertonRodrigoLimaDeAlmeida.Domain.BO
 {
     public class MinhaCDNLog : LogBase
     {
+        public MinhaCDNLog(
+            int? responseSize,
+            int? statusCode,
+            string cacheStatus,
+            string httpMethod,
+            string uriPath,
+            int? timeTaken)
+        {
+            Provider = "\"MINHA CDN\"";
+            ResponseSize = responseSize;
+            StatusCode = statusCode;
+            CacheStatus = cacheStatus;
+            HttpMethod = httpMethod;
+            UriPath = uriPath;
+            TimeTaken = timeTaken;
+        }
+
         public MinhaCDNLog() =>
             Provider = "\"MINHA CDN\"";
 
